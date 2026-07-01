@@ -1,0 +1,194 @@
+import tkinter as tk
+import random
+
+class DinoGame:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Pixel Dino Jump 🦖")
+        self.root.geometry("600x320")
+        self.root.resizable(False, False)
+
+        # ตัวแปรระบบเกม
+        self.score = 0
+        self.is_jumping = False
+        self.jump_count = 0
+        self.game_running = True
+        self.animation_frame = 0
+
+        # ส่วนหัวข้อคะแนน
+        self.score_label = tk.Label(root, text="HI-SCORE: 00000", font=("Courier", 16, "bold"), fg="#535353", bg="#f7f7f7")
+        self.score_label.pack(fill=tk.X, pady=5)
+
+        # หน้าจอเกม (Canvas)
+        self.canvas = tk.Canvas(root, width=600, height=250, bg="#f7f7f7", highlightthickness=0)
+        self.canvas.pack()
+
+        # วาดเส้นพื้นดิน
+        self.canvas.create_line(0, 220, 600, 220, fill="#535353", width=2)
+        for i in range(0, 600, 40):
+            self.canvas.create_line(i, 225, i+10, 225, fill="#a3a3a3", width=1)
+
+        self.obstacles = []
+        self.clouds = []
+
+        # เรียกใช้ฟังก์ชันวาดพิกเซลไดโนเสาร์
+        self.dino_parts = self.draw_pixel_dino(50, 165)
+
+        # ผูกปุ่มกระโดด
+        self.root.bind("<space>", self.on_space)
+
+        self.spawn_obstacle()
+        self.spawn_cloud()
+        self.update_game()
+
+    def draw_pixel_dino(self, start_x, start_y):
+        """วาดตัวไดโนเสาร์พิกเซลจากข้อความสตริง"""
+        dino_art = [
+            "....111111",
+            "....113111",
+            "....111111",
+            "1...11222.",
+            "11..11111.",
+            ".11111111.",
+            "..1111111.",
+            "...11111..",
+            "...4...5.."
+        ]
+        size = 5
+        parts = []
+        for r_idx, row in enumerate(dino_art):
+            for c_idx, val in enumerate(row):
+                if val == '.': continue
+                x1 = start_x + (c_idx * size)
+                y1 = start_y + (r_idx * size)
+                x2 = x1 + size
+                y2 = y1 + size
+                
+                color = "#2ecc71"
+                tag = "dino_body"
+                if val == '3': color = "#000000"
+                if val == '2': color = "#a3e4d7"
+                if val == '4': tag = "dino_leg_l"
+                if val == '5': tag = "dino_leg_r"
+
+                p = self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline=color, tags=tag)
+                parts.append(p)
+        return parts
+
+    def draw_pixel_cactus(self, start_x, start_y):
+        """วาดต้นกระบองเพชรพิกเซลจากข้อความสตริง"""
+        cactus_art = [
+            "..1..",
+            "..1..",
+            "1.1.1",
+            "1.1.1",
+            "11111",
+            "..1..",
+            "..1..",
+            "..1..",
+            "..1.."
+        ]
+        size = 5
+        parts = []
+        for r_idx, row in enumerate(cactus_art):
+            for c_idx, val in enumerate(row):
+                if val == '1':
+                    x1 = start_x + (c_idx * size)
+                    y1 = start_y + (r_idx * size)
+                    x2 = x1 + size
+                    y2 = y1 + size
+                    p = self.canvas.create_rectangle(x1, y1, x2, y2, fill="#e74c3c", outline="#c0392b")
+                    parts.append(p)
+        return parts
+
+    def on_space(self, event):
+        if not self.is_jumping and self.game_running:
+            self.is_jumping = True
+            self.jump_count = 14
+
+    def spawn_obstacle(self):
+        if self.game_running:
+            cactus_parts = self.draw_pixel_cactus(600, 175)
+            self.obstacles.append(cactus_parts)
+            self.root.after(random.randint(1200, 2500), self.spawn_obstacle)
+
+    def spawn_cloud(self):
+        if self.game_running:
+            y_pos = random.randint(30, 100)
+            cloud = self.canvas.create_oval(600, y_pos, 650, y_pos+20, fill="#e1e1e1", outline="#e1e1e1")
+            self.canvas.tag_lower(cloud)
+            self.clouds.append(cloud)
+            self.root.after(random.randint(4000, 7000), self.spawn_cloud)
+
+    def update_game(self):
+        if self.game_running:
+            self.animation_frame += 1
+            if not self.is_jumping:
+                if self.animation_frame % 6 < 3:
+                    self.canvas.move("dino_leg_l", 0, -2)
+                    self.canvas.move("dino_leg_r", 0, 2)
+                else:
+                    self.canvas.move("dino_leg_l", 0, 2)
+                    self.canvas.move("dino_leg_r", 0, -2)
+
+            if self.is_jumping:
+                self.canvas.move("dino_body", 0, -self.jump_count)
+                self.canvas.move("dino_leg_l", 0, -self.jump_count)
+                self.canvas.move("dino_leg_r", 0, -self.jump_count)
+                self.jump_count -= 1
+                
+                # [แก้ไขจุดบั๊กบรรทัด 141] ดึงค่าแกน Y (ตำแหน่งที่ 1) มาตรวจสอบการตกพื้นดิน
+                dino_pos = self.canvas.coords(self.dino_parts[0])[1]
+                if dino_pos >= 165:
+                    diff = 165 - dino_pos
+                    self.canvas.move("dino_body", 0, diff)
+                    self.canvas.move("dino_leg_l", 0, diff)
+                    self.canvas.move("dino_leg_r", 0, diff)
+                    self.is_jumping = False
+
+            remaining_clouds = []
+            for cloud in self.clouds:
+                self.canvas.move(cloud, -1, 0)
+                if self.canvas.coords(cloud)[0] < -60:
+                    self.canvas.delete(cloud)
+                else:
+                    remaining_clouds.append(cloud)
+            self.clouds = remaining_clouds
+
+            dino_boxes = [self.canvas.coords(p) for p in self.dino_parts]
+            remaining_obstacles = []
+
+            for obs_parts in self.obstacles:
+                for p in obs_parts:
+                    self.canvas.move(p, -6, 0)
+                
+                first_piece_pos = self.canvas.coords(obs_parts[0])[0]
+
+                if first_piece_pos < -40:
+                    for p in obs_parts: self.canvas.delete(p)
+                    self.score += 1
+                    self.score_label.config(text=f"HI-SCORE: {self.score:05d}")
+                else:
+                    remaining_obstacles.append(obs_parts)
+                    
+                    for obs_p in obs_parts:
+                        o_box = self.canvas.coords(obs_p)
+                        for d_box in dino_boxes:
+                            if (d_box[0] < o_box[2] and d_box[2] > o_box[0] and
+                                d_box[1] < o_box[3] and d_box[3] > o_box[1]):
+                                self.game_over()
+                                return
+
+            self.obstacles = remaining_obstacles
+            self.root.after(20, self.update_game)
+
+    def game_over(self):
+        self.game_running = False
+        self.canvas.create_text(300, 100, text="G A M E   O V E R", font=("Courier", 24, "bold"), fill="#535353")
+        self.canvas.create_text(300, 140, text="PRESS SPACE TO EXIT", font=("Courier", 12), fill="#7f8c8d")
+        self.root.bind("<space>", lambda e: self.root.destroy())
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    game = DinoGame(root)
+    root.mainloop()
