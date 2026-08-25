@@ -1,0 +1,132 @@
+import os
+import webbrowser
+
+# สร้างไฟล์ HTML หน้าตาแอปพลิเคชันเวอร์ชันสมบูรณ์
+html_content = """<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>โปรแกรมสอนและทดสอบ List & String</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #2d3748; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #1e3d59; margin-bottom: 30px; }
+        .tab-buttons { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
+        button { padding: 10px 25px; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .btn-str { background-color: #ffc13b; color: #1e3d59; }
+        .btn-list { background-color: #17b978; color: white; }
+        .btn-submit { background-color: #1e3d59; color: white; width: 100%; margin-top: 15px; }
+        .card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 20px; background-color: #f8f9fa; }
+        .card h2 { margin-top: 0; color: #1e3d59; font-size: 18px; }
+        .options { margin-top: 15px; }
+        .option-item { margin: 8px 0; display: flex; align-items: center; gap: 10px; font-size: 16px; cursor: pointer; }
+        .score-box { text-align: center; font-size: 18px; font-weight: bold; color: #1e3d59; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💻 โปรแกรมสอนและทดสอบ Python</h1>
+        <div class="tab-buttons">
+            <button class="btn-str" onclick="switchTopic('string')">บทเรียน String</button>
+            <button class="btn-list" onclick="switchTopic('list')">บทเรียน List</button>
+        </div>
+        <div id="content"></div>
+    </div>
+
+    <script>
+        const data = {
+            string: [
+                { title: "หัวข้อ 1/5: การสร้างและการเข้าถึงดัชนี (Indexing & Slicing)", desc: "String คือข้อความ ล้อมรอบด้วย ' ' หรือ \\" \\" เข้าถึงรายตัวด้วย index เริ่มจาก 0 และตัดคำได้ด้วย [start:end]\\n\\ntext = 'Python'\\nprint(text)   # ผลลัพธ์: 'P'\\nprint(text[2:5]) # ผลลัพธ์: 'tho'", q: "ถ้ากำหนดให้ text = 'Hello' ผลลัพธ์ของคำสั่ง text[1:4] คือข้อใด?", opts: ["Hel", "ell", "llo", "El"], ans: "ell" },
+                { title: "หัวข้อ 2/5: การหาความยาวและการนับตัวอักษร (len & count)", desc: "ใช้ len() เพื่อนับความยาวข้อความ และใช้ .count('คำ') เพื่อนับจำนวนคำที่ปรากฏ\\n\\ntext = 'banana'\\nprint(len(text))       # ผลลัพธ์: 6\\nprint(text.count('a')) # ผลลัพธ์: 3", q: "ถ้ากำหนดให้ text = 'coding time' ผลลัพธ์ของ len(text) จะมีค่าเท่าใด?", opts: ["10", "11", "9", "Error"], ans: "11" },
+                { title: "หัวข้อ 3/5: การแปลงตัวพิมพ์และการแทนที่ (.upper, .lower, .replace)", desc: "ใช้ .upper() เปลี่ยนเป็นพิมพ์ใหญ่, .lower() เปลี่ยนเป็นพิมพ์เล็ก และใช้ .replace() เพื่อเปลี่ยนข้อความ\\n\\ntext = 'Java'\\nprint(text.upper())          # ผลลัพธ์: 'JAVA'\\nprint(text.replace('J', 'K')) # ผลลัพธ์: 'Kava'", q: "คำสั่งในข้อใดทำให้ข้อความ 'apple' เปลี่ยนเป็น 'APPLE'?", opts: ["'apple'.upper()", "'apple'.toUpper()", "'apple'.lower()", "'apple'.capital()"], ans: "'apple'.upper()" },
+                { title: "หัวข้อ 4/5: การแยกและการรวมข้อความ (.split & .join)", desc: "ใช้ .split() แยกข้อความเป็น List และใช้ .join() รวมกลับเป็นข้อความผืนเดียว\\n\\nwords = 'a,b,c'.split(',') # ผลลัพธ์: ['a', 'b', 'c']\\nprint('-'.join(words))     # ผลลัพธ์: 'a-b-c'", q: "ผลลัพธ์ของคำสั่ง '-'.join(['Py', 'th', 'on']) คือข้อใด?", opts: ["Py th on", "Python", "Py-th-on", "Error"], ans: "Py-th-on" },
+                { title: "หัวข้อ 5/5: การตรวจสอบเนื้อหาข้อมูล (.isalpha & .isdigit)", desc: "ใช้ .isalpha() เช็คว่าเป็นตัวอักษรทั้งหมด และ .isdigit() เช็คว่าเป็นตัวเลขทั้งหมด\\n\\nprint('123'.isdigit())  # ผลลัพธ์: True\\nprint('abc1'.isalpha()) # ผลลัพธ์: False", q: "คำสั่ง 'Hello'.isalpha() จะส่งค่าผลลัพธ์เป็นอะไร?", opts: ["True", "False", "None", "Error"], ans: "True" }
+            ],
+            list: [
+                { title: "หัวข้อ 1/5: การสร้างและการดึงค่า (List Indexing)", desc: "List ใช้เก็บข้อมูลหลายค่า ล้อมรอบด้วย [ ] สมาชิกแยกด้วยเครื่องหมายจุลภาค (,)\\n\\nnums = [10, 20, 30]\\nprint(nums[0])  # ผลลัพธ์: 10\\nprint(nums[-1]) # ผลลัพธ์: 30", q: "ถ้ากำหนดให้ x = [5, 4, 3, 2] ดัชนี x[2] คืออะไร?", opts: ["5", "4", "3", "2"], ans: "3" },
+                { title: "หัวข้อ 2/5: การเพิ่มข้อมูลต่อท้ายและแทรกตำแหน่ง (.append & .insert)", desc: "ใช้ .append() นำข้อมูลไปต่อท้ายสุด และใช้ .insert() แทรกข้อมูลเข้าตำแหน่งดัชนีที่ต้องการ\\n\\nmy_list = [1, 2]\\nmy_list.append(3)      # เป็น [1, 2, 3]\\nmy_list.insert(0, 99)   # เป็น [99, 1, 2, 3]", q: "หากมีตัวแปร a = [1, 2, 3] แล้วสั่งคำสั่ง a.append(4) ตัวแปร a จะกลายเป็นข้อใด?", opts: ["[1, 2, 3, 4]", "[4, 1, 2, 3]", "[1, 2, 3]", "Error"], ans: "[1, 2, 3, 4]" },
+                { title: "หัวข้อ 3/5: การลบข้อมูลออกจากรายการ (.remove & .pop)", desc: "ใช้ .remove() ลบข้อมูลตัวแรกที่ตรงกับค่า และใช้ .pop() ลบและดึงค่าดัชนีนั้นออก\\n\\nx = ['apple', 'banana', 'cat']\\nx.remove('banana') # เหลือ ['apple', 'cat']\\nx.pop(0)           # เหลือ ['cat']", q: "ถ้า x = [10, 20, 30] แล้วสั่งคำสั่ง x.pop() ตัวแปร x จะเหลือสมาชิกตามข้อใด?", opts: ["[10, 20]", "[20, 30]", "[10, 30]", "[]"], ans: "[10, 20]" },
+                { title: "หัวข้อ 4/5: การเรียงลำดับและกลับหัวท้าย (.sort & .reverse)", desc: "ใช้ .sort() จัดเรียงข้อมูลจากน้อยไปมาก และใช้ .reverse() สลับลำดับหน้าหลังสุดของข้อมูล\\n\\nitems = [3, 1, 2]\\nitems.sort()    # เป็น [1, 2, 3]\\nitems.reverse() # เป็น [3, 2, 1]", q: "คำสั่งใดใช้จัดเรียงข้อมูลใน List จากน้อยไปมาก?", opts: ["order()", "arrange()", "sort()", "reverse()"], ans: "sort()" },
+                { title: "หัวข้อ 5/5: ฟังก์ชันสถิติและการเช็คสมาชิก (sum, max, min, in)", desc: "ใช้ sum(), max(), min() คำนวณค่าตัวเลขใน List ได้ทันที และใช้ `in` ตรวจสอบสมาชิก\\n\\nscores = [1, 2, 3]\\nprint(max(scores))   # ผลลัพธ์: 3\\nprint(5 in scores)   # ผลลัพธ์: False", q: "ถ้ากำหนดให้ x = [10, 20, 30] ผลลัพธ์ของคำสั่ง sum(x) + min(x) คือข้อใด?", opts: ["35", "40", "70", "15"], ans: "70" }
+            ]
+        };
+
+        let currentTopic = 'string';
+        let currentStep = 0;
+        let score = 0;
+
+        function switchTopic(topic) {
+            currentTopic = topic;
+            currentStep = 0;
+            score = 0;
+            loadStep();
+        }
+
+        function loadStep() {
+            if (currentStep >= 5) {
+                document.getElementById('content').innerHTML = `
+                    <div class="score-box">
+                        <h2>🎉 จบบทเรียนหมวด ${currentTopic.toUpperCase()} แล้ว!</h2>
+                        <p>คุณได้คะแนนรวมทั้งหมด: ${score} เต็ม 5 คะแนน</p>
+                        <button class="btn-str" onclick="switchTopic('${currentTopic}')">เริ่มเรียนใหม่อีกครั้ง</button>
+                    </div>`;
+                return;
+            }
+
+            const item = data[currentTopic][currentStep];
+            let optionsHtml = '';
+            item.opts.forEach(opt => {
+                optionsHtml += `
+                    <label class="option-item">
+                        <input type="radio" name="quiz_opt" value="${opt}"> ${opt}
+                    </label>`;
+            });
+
+            document.getElementById('content').innerHTML = `
+                <div class="card">
+                    <h2>📖 บทเรียน: ${item.title}</h2>
+                    <p style="white-space: pre-line;">${item.desc.replace(/\\\\n/g, '\\n')}</p>
+                </div>
+                <div class="card" style="border-color: #e84a5f;">
+                    <h2>📝 แบบทดสอบเก็บคะแนน ประจำหัวข้อ</h2>
+                    <p><strong>คำถาม:</strong> ${item.q}</p>
+                    <div class="options">${optionsHtml}</div>
+                    <button class="btn-submit" onclick="checkAnswer()">ส่งคำตอบ</button>
+                    <div class="score-box">คะแนนสะสมในเซสชันนี้: ${score} คะแนน</div>
+                </div>`;
+        }
+
+        function checkAnswer() {
+            const selected = document.querySelector('input[name="quiz_opt"]:checked');
+            if (!selected) {
+                alert('กรุณาเลือกคำตอบก่อนส่งด้วยครับ!');
+                return;
+            }
+
+            const item = data[currentTopic][currentStep];
+            if (selected.value === item.ans) {
+                score++;
+                alert('🎉 ถูกต้องแล้วครับ! คำตอบคือ: ' + item.ans);
+            } else {
+                alert('❌ ยังไม่ถูกน้าา~ คำตอบที่ถูกต้องคือ: ' + item.ans);
+            }
+
+            currentStep++;
+            loadStep();
+        }
+
+        // เริ่มต้นโหลดหน้าแรก
+        loadStep();
+    </script>
+</body>
+</html>
+"""
+
+# บันทึกไฟล์ HTML ลงเครื่อง
+file_path = os.path.abspath("index.html")
+with open(file_path, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+# บังคับเปิดไฟล์ตรงๆ จากที่อยู่ในเครื่อง (ตัดปัญหา Firewall บล็อก)
+webbrowser.open(f"file:///{file_path}")
+print("⚡ [สำเร็จ!] โปรแกรมกำลังเปิดหน้าต่างแอปพลิเคชันจาก VS Code...")
