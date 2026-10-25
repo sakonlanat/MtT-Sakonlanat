@@ -1,106 +1,34 @@
 import tkinter as tk
-from tkinter import messagebox
-import snake_game
-import guess_number
+import random
 
+def lottery():
+    first.config(text=f"{random.randint(0,999999):06d}")
+    front.config(text=f"{random.randint(0,999):03d}   {random.randint(0,999):03d}")
+    back3.config(text=f"{random.randint(0,999):03d}   {random.randint(0,999):03d}")
+    back2.config(text=f"{random.randint(0,99):02d}")
 
-# --------------------------
-# เปิดเกมงู
-# --------------------------
-def open_snake():
-    root.withdraw()  # ซ่อนหน้าเมนู
+app = tk.Tk()
+app.title("โปรแกรมสุ่มตัวเลข")
+app.geometry("300x300")
 
-    try:
-        snake_game.start_game()
-    except Exception as e:
-        messagebox.showerror("Error", str(e))
+tk.Label(app, text="โปรแกรมสุ่มตัวเลข", font=("Arial", 14, "bold")).pack()
 
-    root.deiconify()  # แสดงหน้าเมนูอีกครั้ง
+tk.Label(app, text="รางวัลที่ 1").pack()
+first = tk.Label(app, text="------", font=("Arial", 18), fg="red")
+first.pack()
 
+tk.Label(app, text="เลขหน้า 3 ตัว").pack()
+front = tk.Label(app, text="---   ---", font=("Arial", 14))
+front.pack()
 
-# --------------------------
-# เปิดเกมทายตัวเลข
-# --------------------------
-def open_guess():
-    root.withdraw()
+tk.Label(app, text="เลขท้าย 3 ตัว").pack()
+back3 = tk.Label(app, text="---   ---", font=("Arial", 14))
+back3.pack()
 
-    try:
-        guess_number.start_game()
-    except Exception as e:
-        messagebox.showerror("Error", str(e))
+tk.Label(app, text="เลขท้าย 2 ตัว").pack()
+back2 = tk.Label(app, text="--", font=("Arial", 16))
+back2.pack()
 
-    root.deiconify()
+tk.Button(app, text="สุ่มเลข", command=lottery).pack(pady=10)
 
-
-# --------------------------
-# สร้างหน้าต่างหลัก
-# --------------------------
-root = tk.Tk()
-root.title("Mini Game Project")
-root.geometry("450x350")
-root.resizable(False, False)
-root.configure(bg="#2C3E50")
-
-
-# --------------------------
-# หัวข้อ
-# --------------------------
-title = tk.Label(
-    root,
-    text="🎮 MINI GAME PROJECT 🎮",
-    font=("Arial", 20, "bold"),
-    bg="#2C3E50",
-    fg="white"
-)
-title.pack(pady=25)
-
-
-# --------------------------
-# ปุ่มเกมงู
-# --------------------------
-btn_snake = tk.Button(
-    root,
-    text="🐍 Snake Game",
-    font=("Arial", 14, "bold"),
-    bg="#27AE60",
-    fg="white",
-    width=20,
-    height=2,
-    command=open_snake
-)
-btn_snake.pack(pady=10)
-
-
-# --------------------------
-# ปุ่มเกมทายตัวเลข
-# --------------------------
-btn_guess = tk.Button(
-    root,
-    text="🔢 Guess Number",
-    font=("Arial", 14, "bold"),
-    bg="#2980B9",
-    fg="white",
-    width=20,
-    height=2,
-    command=open_guess
-)
-btn_guess.pack(pady=10)
-
-
-# --------------------------
-# ปุ่มออก
-# --------------------------
-btn_exit = tk.Button(
-    root,
-    text="❌ Exit",
-    font=("Arial", 14, "bold"),
-    bg="#C0392B",
-    fg="white",
-    width=20,
-    height=2,
-    command=root.destroy
-)
-btn_exit.pack(pady=20)
-
-
-root.mainloop()
+app.mainloop()
